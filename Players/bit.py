@@ -8,7 +8,7 @@ class Player(base_player.BasePlayer):
     base_player.BasePlayer.__init__(self)
     self._playerName = "Baker Item Tango"
     self._playerYear = "2"
-    self._version = "1.2"
+    self._version = "1.21"
     self._playerDescription = "46bit's first Blottleship player."
 
   DESTROYER = [[0, 0], [1, 0]]

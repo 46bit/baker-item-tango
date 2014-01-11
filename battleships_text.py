@@ -3,6 +3,10 @@ from random import randint
 import const
 from battleships_gui import BattleshipsGraphics
 import playerloader
+from watchdog import Watchdog
+
+# How many seconds to allow AIs for each function call.
+watchdog_time = 2
 
 ## importing players file
 listPlayers = playerloader.import_players()
@@ -140,7 +144,13 @@ def playGame(firstPlayer, secondPlayer, turn, gui = None):
     while not haveWinner:
         if turn > 0:
             # Make a move by looking at the opponent's board
-            i1,i2 = firstPlayer.chooseMove()
+            try:
+              with Watchdog(watchdog_time):
+                i1,i2 = firstPlayer.chooseMove()
+            except Watchdog:
+              print "Player 1 took longer than 2s for Player.chooseMove()."
+              return (0, 1)
+
             # Ask the user to enter the outcome
             outcome = giveOutcome(player2_board, i1, i2)
 ##            print "outcome of", chr(i1+65), i2+1, "is:", outcome
@@ -151,15 +161,33 @@ def playGame(firstPlayer, secondPlayer, turn, gui = None):
                 else:
                     gui.drawMiss('left', i1, i2)
 
-            firstPlayer.setOutcome(outcome, i1, i2)
-            secondPlayer.getOpponentMove(i1, i2)
+            try:
+              with Watchdog(watchdog_time):
+                firstPlayer.setOutcome(outcome, i1, i2)
+            except Watchdog:
+              print "Player 1 took longer than 2s for Player.setOutcome()."
+              return (0, 1)
+
+            try:
+              with Watchdog(watchdog_time):
+                secondPlayer.getOpponentMove(i1, i2)
+            except Watchdog:
+              print "Player 2 took longer than 2s for Player.getOpponentMove()."
+              return (1, 0)
+
             # Show the current board state
             turn *= -1
             haveWinner = checkWinner(player2_board)
 
         else:
             # Make a move by looking at the opponent's board
-            i1,i2 = secondPlayer.chooseMove()
+            try:
+              with Watchdog(watchdog_time):
+                i1,i2 = secondPlayer.chooseMove()
+            except Watchdog:
+              print "Player 2 took longer than 2s for Player.chooseMove()."
+              return (1, 0)
+
             # Ask the user to enter the outcome
             outcome = giveOutcome(player1_board, i1, i2)
 ##            print "outcome of", chr(i1+65), i2+1, "is:", outcome
@@ -169,8 +197,20 @@ def playGame(firstPlayer, secondPlayer, turn, gui = None):
                 else:
                     gui.drawMiss('right', i1, i2)
 
-            secondPlayer.setOutcome(outcome, i1, i2)
-            firstPlayer.getOpponentMove(i1, i2)
+            try:
+              with Watchdog(watchdog_time):
+                secondPlayer.setOutcome(outcome, i1, i2)
+            except Watchdog:
+              print "Player 2 took longer than 2s for Player.setOutcome()."
+              return (1, 0)
+
+            try:
+              with Watchdog(watchdog_time):
+                firstPlayer.getOpponentMove(i1, i2)
+            except Watchdog:
+              print "Player 1 took longer than 2s for Player.getOpponentMove()."
+              return (0, 1)
+
             # Show the current board state
             turn *= -1
             haveWinner = checkWinner(player1_board)
@@ -219,7 +259,7 @@ def printTable(table, listPlayers):
 
 # Main
 ##gui = BattleshipsGraphics(12)
-table = playChampionship(listPlayers, 49)
+table = playChampionship(listPlayers, 49000)
 printTable(table, listPlayers)
 
 
