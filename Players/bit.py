@@ -72,35 +72,27 @@ class Player(base_player.BasePlayer):
 
   def placePiece(self, piece, direction, row, col, emptyNeighbours):
     # Work out direction multipliers for offsets of the piece's voxels
-    voxelrowm = 1
-    voxelcolm = 1
-    if direction % 2 == 1:
-      voxelrowm = -1
-    if direction > 1:
-      voxelcolm = -1
+    voxelrowm = -1 if direction % 2 == 1 else 1
+    voxelcolm = -1 if direction > 1 else 1
 
+    # Determine and verify the offset and rotated position of the piece's voxels.
+    piece = [[voxel[0] * voxelrowm + row, voxel[1] * voxelcolm + col] for voxel in piece]
     for voxel in piece:
-      vrow = voxel[0] * voxelrowm + row
-      vcol = voxel[1] * voxelcolm + col
-
       # Check each voxel's position is empty, and the neighbours if emptyNeighbours.
       # If not empty we abort, new row/col needed.
-      neighbours = []
-      neighbours.append([vrow, vcol])
-      if emptyNeighbours:
-        neighbours.append([vrow + 1, vcol])
-        neighbours.append([vrow, vcol + 1])
-        neighbours.append([vrow - 1, vcol])
-        neighbours.append([vrow, vcol - 1])
+      neighbours = self.cellNeighbours(voxel) if emptyNeighbours else []
+      neighbours.append(voxel)
+
       for neighbour in neighbours:
+        # cellNeighbours only returns ones on the board so isCell won't block on
+        # pieces touching the edge. Since neighbours here includes the current cell,
+        # we are stopping pieces being placed outside the board.
         if not self.isCell(const.EMPTY, neighbour):
           return False
 
     # We've passed our tests of the location, so occupy it.
     for voxel in piece:
-      vrow = voxel[0] * voxelrowm + row
-      vcol = voxel[1] * voxelcolm + col
-      self._playerBoard[vrow][vcol] = const.OCCUPIED
+      self._playerBoard[voxel[0]][voxel[1]] = const.OCCUPIED
 
     return True
 
@@ -151,7 +143,7 @@ class Player(base_player.BasePlayer):
     if entry == const.HIT:
       is_valid = True
       Outcome = const.HIT
-      self.planSinkingFire(row, col)
+      self.planSinkingFire([row, col])
     elif entry == const.MISSED:
       is_valid = True
       Outcome = const.MISSED
@@ -165,17 +157,15 @@ class Player(base_player.BasePlayer):
     else:
       self._warMode = "sink"
 
-  def planSinkingFire(self, row, col):
+  def planSinkingFire(self, coords):
+    row, col = coords
+
     # See if it's worth hitting points N, E, S, W of hit point.
-    for dx in range(-1, 2):
-      for dy in range(-1, 2):
-        possible_target = [row + dx, col + dy]
-        # Ignore current point and diagonals.
-        if dx == dy or dx == -dy:
-          continue
-        # Add target to list if within bounds, not played and not already on list.
-        if self.isWithinBounds(possible_target) and (possible_target not in self._playedMoves) and (possible_target not in self._possibleTargets):
-          self._possibleTargets.append(possible_target)
+    neighbours = self.cellNeighbours([row, col])
+    for neighbour in neighbours:
+      # Add target to list if within bounds, not played and not already on list.
+      if self.withinBounds(neighbour) and self.notPlayed(neighbour) and self.notTarget(neighbour):
+        self._possibleTargets.append(neighbour)
 
   def getOpponentMove(self, row, col):
     if self.isCell(const.OCCUPIED, [row, col]) or self.isCell(const.HIT, [row, col]):
@@ -186,19 +176,49 @@ class Player(base_player.BasePlayer):
 
     return result
 
-  def isWithinBounds(self, coords):
-    row = coords[0]
-    col = coords[1]
-    if row < 0 or row > 11 or col < 0 or col > 11:
-      return False
-    if col > 5 and row < 6:
-      return False
-    return True
+  def withinBounds(self, coords):
+    row, col = coords
+    return not (row < 0 or row > 11 or col < 0 or col > 11 or (col > 5 and row < 6))
 
   def isCell(self, val, coords):
-    row = coords[0]
-    col = coords[1]
-    return self.isWithinBounds(coords) and self._playerBoard[row][col] == val
+    row, col = coords
+    return self.withinBounds(coords) and self._playerBoard[row][col] == val
+
+  # Get the bounded NESW neighbours of a provided coordinate.
+  def cellNeighbours(self, coords):
+    row, col = coords
+
+    # List NESW neighbours.
+    neighbours = []
+    neighbours.append([row - 1, col])
+    neighbours.append([row, col + 1])
+    neighbours.append([row + 1, col])
+    neighbours.append([row, col - 1])
+
+    # Only keep neighbours that are on the board.
+    neighbours = [neighbour for neighbour in neighbours if self.withinBounds(neighbour)]
+
+    return neighbours
+
+  # Get the bounded squares in a 3x3 centred upon the provided coordinate.
+  def cellLocality(self, coords):
+    row, col = coords
+
+    neighbours = []
+    for i in range(-1, 2):
+      for j in range(-1, 2):
+        neighbours.append([row + i, col + j])
+
+    # Only keep neighbours that are on the board.
+    neighbours = [neighbour for neighbour in neighbours if self.withinBounds(neighbour)]
+
+    return neighbours
+
+  def notPlayed(self, coords):
+    return (coords not in self._playedMoves)
+
+  def notTarget(self, coords):
+    return (coords not in self._possibleTargets)
 
 def getPlayer():
     """ MUST NOT be changed, used to get a instance of your class."""
