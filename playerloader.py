@@ -8,7 +8,7 @@ def import_players():
         if f.find('__init__.py')<0:
             f = f.replace("\\", '.')
             f = f.replace('/', '.')
-            
+
             players_files.append(f[:-3])
 
     print players_files

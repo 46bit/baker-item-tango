@@ -1,3 +1,4 @@
+import math
 import const
 import base_player
 from random import randint
@@ -19,7 +20,7 @@ class Player(base_player.BasePlayer):
     in the _initBoards method in the file base_player.py
     """
     self._initBoards()
-    self._playedMoves = [[-1, -1]]
+
     # Simple example which always positions the ships in the same place
     # This is a very bad idea! You will want to do something random
     # Destroyer (2 squares)
@@ -40,6 +41,11 @@ class Player(base_player.BasePlayer):
     self._playerBoard[9][5:9]=[const.OCCUPIED]*4
     self._playerBoard[8][5]=const.OCCUPIED
     self._playerBoard[10][5]=const.OCCUPIED
+
+    self._playedMoves = [[-1, -1]]
+    self._warMode = "hunt"
+    self._possibleTargets = []
+
     return self._playerBoard
 
   # Decide what move to make based on current state of opponent's board and print it out
@@ -50,16 +56,24 @@ class Player(base_player.BasePlayer):
     # Knowledge about opponent's board is completely ignored
     """
 
-    move = [-1, -1]
-    while move in self._playedMoves:
-      move[0] = randint(0, 11)
-      if move[0] < 6:
-          # Top half of board, so choose between first and sixth row
-          move[1] = randint(0, 5)
-      else:
-          # Bottom half so choose between first and twelfth row
-          move[1] = randint(0, 11)
-    self._playedMoves.append(move)
+    if self._warMode == "hunt":
+      move = [-1, -1]
+      while move in self._playedMoves:
+        move[0] = randint(0, 11)
+
+        if move[0] < 6:
+          move[1] = randint(0, 2) * 2
+        else:
+          move[1] = randint(0, 5) * 2
+        if move[0] % 2 == 1:
+          move[1] = move[1] + 1
+
+      self._playedMoves.append(move)
+    elif self._warMode == "sink":
+      move = self._possibleTargets.pop(0)
+      print move
+      self._playedMoves.append(move)
+
     # Display move in row (letter) + col (number) grid reference
     # e.g. A3 is represented as 0,2
     return move[0], move[1]
@@ -74,14 +88,34 @@ class Player(base_player.BasePlayer):
 
     is_valid = False
     if entry == const.HIT:
-        is_valid = True
-        Outcome = const.HIT
+      is_valid = True
+      Outcome = const.HIT
+
+      self._warMode = "sink"
+
+      for dx in range(-1, 2):
+        for dy in range(-1, 2):
+          if dx == dy or dx == -dy:
+            continue
+          possible_target = [row + dx, col + dy]
+          if possible_target[0] < 0 or possible_target[0] > 11:
+            continue
+          if possible_target[1] < 0 or possible_target[1] > 11:
+            continue
+          if possible_target[1] > 5 and possible_target[0] < 6:
+            continue
+
+          if (possible_target not in self._playedMoves) and (possible_target not in self._possibleTargets):
+            self._possibleTargets.append(possible_target)
     elif entry == const.MISSED:
-        is_valid = True
-        Outcome = const.MISSED
+      is_valid = True
+      Outcome = const.MISSED
     else:
-        raise Exception("Invalid input!")
+      raise Exception("Invalid input!")
     self._opponenBoard[row][col]=Outcome
+
+    if len(self._possibleTargets) == 0:
+      self._warMode = "hunt"
 
   def getOpponentMove(self, row, col):
     """ You might like to keep track of where your opponent
