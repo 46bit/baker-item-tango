@@ -8,7 +8,7 @@ import playerloader
 ##           PARAMETERS SETTING         ##
 ##########################################
 
-rounds = 3    ## Number of rounds per match
+rounds = 300    ## Number of rounds per match
 gridSize = 12 ## size of the board
 
 ## importing players file

@@ -1,7 +1,7 @@
 import math
 import const
 import base_player
-from random import randint
+from random import randint, shuffle
 
 class Player(base_player.BasePlayer):
   def __init__(self):
@@ -12,6 +12,46 @@ class Player(base_player.BasePlayer):
     self._version = "1.0"  # enter the version of your solution if you have more than one
     self._playerDescription = "46bit prototype player."
 
+  DESTROYER = [[0, 0], [1, 0]]
+  CRUISER = [[0, -1], [0, 0], [0, 1]]
+  BATTLESHIP = [[-1, 0], [0, 0], [1, 0], [2, 0]]
+  HOVERCRAFT = [[-1, 0], [0, -1], [0, 1], [0, 0], [1, -1], [1, 1]]
+  CARRIER = [[0, -1], [-1, -1], [1, -1], [0, 0], [0, 1], [0, 2]]
+
+  def placePiece(self, piece, direction, row, col):
+    voxelrowm = 1
+    voxelcolm = 1
+    if direction % 2 == 1:
+      voxelrowm = -1
+    if direction > 1:
+      voxelcolm = -1
+
+    for voxel in piece:
+      vrow = voxel[0] * voxelrowm + row
+      vcol = voxel[1] * voxelcolm + col
+      if (vrow < 0 or vrow > 11) or (vcol > 5 and vrow < 6) or (vcol < 0 or vcol > 11) or (self._playerBoard[vrow][vcol] != const.EMPTY):
+        return False
+
+    for voxel in piece:
+      vrow = voxel[0] * voxelrowm + row
+      vcol = voxel[1] * voxelcolm + col
+      self._playerBoard[vrow][vcol] = const.OCCUPIED
+
+    return True
+
+  def deployPieces(self, pieces):
+    # shuffle pieces!
+
+    for piece in pieces:
+      # print "%d segment piece" % len(piece)
+      while True:
+        d = randint(0, 3)
+        row = randint(0, 11)
+        col = randint(0, 11)
+        # print "(%d %d %d)" % (d, row, col)
+        if self.placePiece(piece, d, row, col):
+          break
+
   # Distribute the fleet onto your board
   def deployFleet(self):
     """
@@ -21,26 +61,9 @@ class Player(base_player.BasePlayer):
     """
     self._initBoards()
 
-    # Simple example which always positions the ships in the same place
-    # This is a very bad idea! You will want to do something random
-    # Destroyer (2 squares)
-    self._playerBoard[4][5]=const.OCCUPIED
-    self._playerBoard[5][5]=const.OCCUPIED
-    # Cruiser (3 squares)
-    self._playerBoard[1][1:4]=[const.OCCUPIED]*3
-    # Battleship (4 squares)
-    self._playerBoard[6][11]=const.OCCUPIED
-    self._playerBoard[7][11]=const.OCCUPIED
-    self._playerBoard[8][11]=const.OCCUPIED
-    self._playerBoard[9][11]=const.OCCUPIED
-    # Hovercraft (6 squares)
-    self._playerBoard[4][2]=const.OCCUPIED
-    self._playerBoard[5][1:4]=[const.OCCUPIED]*3
-    self._playerBoard[6][1:4:2]=[const.OCCUPIED]*2
-    # Aircraft carrier (6 squares)
-    self._playerBoard[9][5:9]=[const.OCCUPIED]*4
-    self._playerBoard[8][5]=const.OCCUPIED
-    self._playerBoard[10][5]=const.OCCUPIED
+    pieces = [self.DESTROYER, self.CRUISER, self.BATTLESHIP, self.HOVERCRAFT, self.CARRIER]
+    shuffle(pieces)
+    self.deployPieces(pieces)
 
     self._playedMoves = [[-1, -1]]
     self._warMode = "hunt"
@@ -67,12 +90,11 @@ class Player(base_player.BasePlayer):
           move[1] = randint(0, 5) * 2
         if move[0] % 2 == 1:
           move[1] = move[1] + 1
-
-      self._playedMoves.append(move)
     elif self._warMode == "sink":
       move = self._possibleTargets.pop(0)
-      print move
-      self._playedMoves.append(move)
+
+    # print move
+    self._playedMoves.append(move)
 
     # Display move in row (letter) + col (number) grid reference
     # e.g. A3 is represented as 0,2

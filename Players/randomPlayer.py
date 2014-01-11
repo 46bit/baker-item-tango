@@ -4,7 +4,7 @@ from random import randint
 
 class Player(base_player.BasePlayer):
 
-    
+
     def __init__(self):
         base_player.BasePlayer.__init__(self)
         self._playerName = "Worst Player... Ever!"  # Can be whatever you want as long as it is a sensible one.
@@ -46,7 +46,7 @@ class Player(base_player.BasePlayer):
     # Decide what move to make based on current state of opponent's board and print it out
     def chooseMove(self):
         """
-        Decide what move to make based on current state of opponent's board and return it 
+        Decide what move to make based on current state of opponent's board and return it
         # Completely random strategy
         # Knowledge about opponent's board is completely ignored
         """

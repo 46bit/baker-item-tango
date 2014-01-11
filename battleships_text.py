@@ -219,7 +219,7 @@ def printTable(table, listPlayers):
 
 # Main
 ##gui = BattleshipsGraphics(12)
-table = playChampionship(listPlayers, 3)
+table = playChampionship(listPlayers, 300)
 printTable(table, listPlayers)
 
 
