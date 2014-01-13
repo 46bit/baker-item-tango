@@ -11,7 +11,7 @@ watchdog_time = 2
 ## importing players file
 listPlayers = playerloader.import_players()
 
-
+bitPlayedMoves = dict()
 
 
 # Check whether the fleet is sunk
@@ -178,7 +178,31 @@ def playGame(firstPlayer, secondPlayer, turn, gui = None):
             # Show the current board state
             turn *= -1
             haveWinner = checkWinner(player2_board)
+            if haveWinner:
+              #print "bitLearned won!", firstPlayer._playedMoves
+              #bitPlayedMoves = bitPlayedMoves + firstPlayer._playedMoves
 
+              for moveindex, move in enumerate(firstPlayer._playedMoves):
+                if not firstPlayer._playedMovesHit[moveindex]:
+                  continue
+                if move[0] not in bitPlayedMoves:
+                  bitPlayedMoves[move[0]] = dict()
+                if move[1] not in bitPlayedMoves[move[0]]:
+                  bitPlayedMoves[move[0]][move[1]] = 0
+                bitPlayedMoves[move[0]][move[1]] = bitPlayedMoves[move[0]][move[1]] + 1
+                # print bitPlayedMoves[move[0]][move[1]]
+
+              def sortByScore(row):
+                return row[2]
+
+              bitPlayedMoveSummary = []
+              for row in bitPlayedMoves.keys():
+                for col in bitPlayedMoves[row].keys():
+                  bitPlayedMoveSummary.append([row, col, bitPlayedMoves[row][col]])
+              bitPlayedMoveSummary.sort(key=sortByScore)
+              # for move in bitPlayedMoveSummary:
+                # print "(%d, %d) plays %d" % (move[0], move[1], move[2])
+              print bitPlayedMoveSummary
         else:
             # Make a move by looking at the opponent's board
             try:
@@ -259,7 +283,7 @@ def printTable(table, listPlayers):
 
 # Main
 ##gui = BattleshipsGraphics(12)
-table = playChampionship(listPlayers, 49000)
+table = playChampionship(listPlayers, 40000000)
 printTable(table, listPlayers)
 
 
