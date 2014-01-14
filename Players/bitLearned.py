@@ -17,7 +17,7 @@ class Player(base_player.BasePlayer):
   HOVERCRAFT = [[-1, 0], [0, -1], [0, 1], [0, 0], [1, -1], [1, 1]]
   CARRIER = [[0, -1], [-1, -1], [1, -1], [0, 0], [0, 1], [0, 2]]
 
-  WINNING_MOVES_LEARNED = []
+  WINNING_MOVES_LEARNED = [[6,11,125],[6,10,290],[6,9,341],[6,0,450],[6,7,502],[6,8,493],[6,1,511],[6,6,562],[6,4,651],[6,3,655],[6,5,711],[6,2,740],[11,11,189],[11,0,227],[11,10,279],[11,1,301],[11,4,413],[11,7,459],[11,9,406],[11,2,424],[11,5,419],[11,6,428],[11,8,496],[11,3,448],[0,5,280],[0,0,394],[0,4,536],[0,1,614],[0,3,727],[0,2,823],[7,11,283],[7,0,324],[7,10,497],[7,1,484],[7,9,649],[7,6,637],[7,3,659],[7,2,625],[7,7,655],[7,4,697],[7,5,710],[7,8,726],[8,11,272],[8,0,366],[8,10,442],[8,1,512],[8,9,595],[8,6,688],[8,7,704],[8,3,712],[8,2,669],[8,4,714],[8,5,683],[8,8,808],[10,11,291],[10,0,352],[10,10,456],[10,1,501],[10,5,623],[10,7,633],[10,9,623],[10,2,674],[10,3,709],[10,6,665],[10,4,702],[10,8,753],[9,11,316],[9,0,352],[9,10,472],[9,1,555],[9,6,667],[9,2,661],[9,9,663],[9,4,704],[9,7,723],[9,3,761],[9,5,731],[9,8,795],[4,5,453],[4,0,613],[4,4,753],[4,1,851],[4,3,982],[4,2,1181],[2,5,471],[2,0,659],[2,4,751],[2,1,880],[2,3,1059],[2,2,1249],[1,5,467],[1,0,546],[1,4,848],[1,1,873],[1,2,1178],[1,3,1135],[3,5,501],[3,0,590],[3,4,743],[3,1,803],[3,3,1004],[3,2,1129],[5,0,583],[5,5,569],[5,4,746],[5,1,839],[5,3,1077],[5,2,1151]]
 
   # Distribute the fleet onto your board
   def deployFleet(self):
@@ -40,8 +40,11 @@ class Player(base_player.BasePlayer):
     self._warMode = "hunt"
 
     # Setup hunting
-    self._huntMode = "tiling"
+    self._huntMode = "winning_move_learned"
     self._diagonalMoves = []
+
+    # Setup sinking
+    self._sinkDirection = [-1, 0]
 
     # Create hunting moves for diagonals across each 6x6 square.
     for i in range(0, 6):
@@ -133,13 +136,6 @@ class Player(base_player.BasePlayer):
 
     if self._huntMode == "winning_move_learned":
       while move in self._playedMoves:
-        i = randint(1, len(self.WINNING_MOVES_LEARNED)) - 1
-        move = self.WINNING_MOVES_LEARNED[i]
-      # count summed frequency, generate from 1 to f
-      # then iterate over WINNING_MOVES_LEARNED until frequency >= random value
-      self._winningMovesLearnedSummedFrequency
-
-      while move in self._playedMoves:
         i = randint(1, self._winningMovesLearnedSummedFrequency)
         summed_frequency_partial = 0
         for winning_move_learned in self.WINNING_MOVES_LEARNED:
@@ -161,6 +157,9 @@ class Player(base_player.BasePlayer):
     return move
 
   def chooseSinkMove(self):
+    self._sinkDirection
+    hit_last_move = self._playedMovesHit[self._playedMoves[-1]]
+
     move = self._possibleTargets.pop(0)
     return move
 
