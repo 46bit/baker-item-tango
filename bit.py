@@ -1,11 +1,12 @@
 import math
 import const
-import base_player
+from Players import BasePlayer
 from random import randint, shuffle
 
-class Player(base_player.BasePlayer):
+class Player(BasePlayer):
   def __init__(self):
-    base_player.BasePlayer.__init__(self)
+    BasePlayer.__init__(self)
+
     self._playerName = "Baker Item Tango"
     self._playerYear = "2"
     self._version = "1.21"

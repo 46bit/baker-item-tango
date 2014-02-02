@@ -1,11 +1,12 @@
 import math
 import const
-import base_player
+from Players import BasePlayer
 from random import randint, shuffle
 
-class Player(base_player.BasePlayer):
+class Player(BasePlayer):
   def __init__(self):
-    base_player.BasePlayer.__init__(self)
+    BasePlayer.__init__(self)
+
     self._playerName = "BitRandomHunt"  # Can be whatever you want as long as it is a sensible one.
                                                 # No more than 25 characters
     self._playerYear = "2" # indicate your year of study here should range from 1 to 4
