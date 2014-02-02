@@ -9,8 +9,8 @@ class Player(BasePlayer):
 
     self._playerName = "Baker Item Tango"
     self._playerYear = "2"
-    self._version = "1.21"
-    self._playerDescription = "46bit's first Blottleship player."
+    self._version = "1.22"
+    self._playerDescription = "46bit's mainline Blottleship player."
 
   DESTROYER = [[0, 0], [1, 0]]
   CRUISER = [[0, -1], [0, 0], [0, 1]]
@@ -136,6 +136,29 @@ class Player(BasePlayer):
     return move
 
   def chooseSinkMove(self):
+    if len(self._possibleTargets) >= 2:
+      dx = self._playedMoves[-1][0] - self._playedMoves[-2][0]
+      dy = self._playedMoves[-1][1] - self._playedMoves[-2][1]
+
+      if dx < 0:
+        dx = -1
+      elif dx > 0:
+        dx = 1
+      else:
+        dx = 0
+
+      if dy < 0:
+        dy = -1
+      elif dy > 0:
+        dy = 1
+      else:
+        dy = 0
+
+      directional_move = [self._playedMoves[-1][0] + dx, self._playedMoves[-1][1] + dy]
+      if directional_move in self._possibleTargets:
+        self._possibleTargets.remove(directional_move)
+        return directional_move
+
     move = self._possibleTargets.pop(0)
     return move
 

@@ -7,11 +7,10 @@ class Player(BasePlayer):
   def __init__(self):
     BasePlayer.__init__(self)
 
-    self._playerName = "BitRandomHunt"  # Can be whatever you want as long as it is a sensible one.
-                                                # No more than 25 characters
-    self._playerYear = "2" # indicate your year of study here should range from 1 to 4
-    self._version = "1.0"  # enter the version of your solution if you have more than one
-    self._playerDescription = "46bit prototype player."
+    self._playerName = "Bit Random"
+    self._playerYear = "2"
+    self._version = "1.0"
+    self._playerDescription = "46bit's silly player."
 
   DESTROYER = [[0, 0], [1, 0]]
   CRUISER = [[0, -1], [0, 0], [0, 1]]
