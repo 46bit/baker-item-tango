@@ -5,4 +5,5 @@ Icon?
 .Trashes
 *.py[cod]
 
-Players/domin*.py
+/randomPlayer*
+/dominus*
